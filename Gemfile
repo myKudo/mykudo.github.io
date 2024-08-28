@@ -18,4 +18,5 @@ group :jekyll_plugins do
     gem 'rouge'
     gem 'minima'
     gem 'jekyll-paginate-v2'
+    gem 'sass-embedded'
 end
