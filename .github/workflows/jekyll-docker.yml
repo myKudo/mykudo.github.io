@@ -13,10 +13,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set permissions for the workspace
-      run: |
-        sudo chown -R $(id -u):$(id -g) ${{ github.workspace }}
-
     - name: Build the site in the jekyll/builder container
       run: |
         docker run \
@@ -25,5 +21,6 @@ jobs:
         -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
         jekyll/builder:latest /bin/bash -c "\
           cd /srv/jekyll && \
+          gem install bundler && \
           bundle install && \
-          jekyll build --future --verbose"
+          bundle exec jekyll build --future --verbose"
