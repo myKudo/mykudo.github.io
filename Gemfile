@@ -10,7 +10,6 @@ group :jekyll_plugins do
   gem 'jekyll-feed'
   gem 'jekyll-sitemap'
   gem 'jekyll-seo-tag'
-  gem 'jekyll-archives'
   gem 'kramdown'
   gem 'rouge'
   gem 'minima'
@@ -18,6 +17,3 @@ group :jekyll_plugins do
   gem 'sass-embedded'
   gem 'jekyll-sass-converter'
 end
-
-# Explicitly include rake with a compatible version
-gem 'rake', '~> 13.0'
