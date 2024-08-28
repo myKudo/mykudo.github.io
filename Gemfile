@@ -8,6 +8,7 @@ group :jekyll_plugins do
 end
 
 gem "rake", "~> 13.0"
+gem "minima", "~> 2.5"  # Add this line to include the minima theme
 
 # Uncomment the following line if developing on Windows: 
 # Performance-booster for watching directories on Windows
