@@ -1,4 +1,12 @@
 source "https://rubygems.org"
 
-# Specify Jekyll version explicitly for consistency
-gem 'jekyll', '~> 4.3.3'
+# Use the latest version of Jekyll
+gem 'jekyll'
+
+group :jekyll_plugins do
+  gem 'jekyll-feed'
+  gem 'jekyll-paginate-v2'
+  gem 'jekyll-archives'
+  gem 'sass-embedded'
+  gem 'jekyll-sass-converter'
+end
