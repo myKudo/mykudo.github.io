@@ -22,5 +22,6 @@ jobs:
         jekyll/builder:latest /bin/bash -c "\
           cd /srv/jekyll && \
           gem install bundler && \
+          bundle config set no-cache 'true' && \
           bundle install && \
           bundle exec jekyll build --future --verbose"
