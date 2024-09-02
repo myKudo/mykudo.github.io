@@ -1,21 +1,23 @@
-name: Jekyll site CI
+name: Build Jekyll Site
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
+    - name: Set up Docker container for Jekyll
+      run: docker run \
         --env BUNDLE_PATH=/tmp/bundle \
         --env GEM_HOME=/tmp/gems \
         --env GEM_PATH=/tmp/gems \
@@ -27,3 +29,17 @@ jobs:
           mkdir -p /tmp/gems && \
           bundle install && \
           jekyll build --future --verbose --trace"
+
+    - name: Upload _site folder as artifact
+      if: success()
+      uses: actions/upload-artifact@v2
+      with:
+        name: site
+        path: _site
+
+    - name: Deploy to GitHub Pages
+      if: success() && github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: _site
