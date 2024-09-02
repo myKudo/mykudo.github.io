@@ -16,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Docker
+    - name: Set up Docker and Build Jekyll site
       run: |
         docker run \
           --env BUNDLE_PATH=/tmp/bundle \
@@ -28,7 +28,7 @@ jobs:
           jekyll/builder:latest /bin/bash -c "\
             mkdir -p /tmp/bundle && \
             mkdir -p /tmp/gems && \
-            jekyll clean && \
+            gem install jekyll bundler && \
             bundle install && \
             jekyll build --future --verbose --trace"
 
