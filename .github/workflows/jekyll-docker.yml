@@ -13,28 +13,17 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Afficher le contenu de main.scss
-      run: |
-        if [ -f assets/main.scss ]; then
-          echo "Le fichier main.scss existe, voici son contenu :"
-          cat assets/main.scss
-        else
-          echo "Le fichier main.scss n'existe pas."
-        fi
-
-    - name: Vérifier les permissions des fichiers
-      run: |
-        echo "Permissions des fichiers dans le dossier assets :"
-        ls -l assets/
-        echo "Permissions des fichiers à la racine du projet :"
-        ls -l
-
     - name: Build the site in the jekyll/builder container
       run: |
         docker run \
+        --env BUNDLE_PATH=/tmp/bundle \
+        --env GEM_HOME=/tmp/gems \
+        --env GEM_PATH=/tmp/gems \
         --user $(id -u):$(id -g) \
         -v ${{ github.workspace }}:/srv/jekyll:z \
         -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
         jekyll/builder:latest /bin/bash -c "\
+          mkdir -p /tmp/bundle && \
+          mkdir -p /tmp/gems && \
           bundle install && \
-          bundle exec jekyll build --future --verbose --trace"
+          jekyll build --future --verbose --trace"
