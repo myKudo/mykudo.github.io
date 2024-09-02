@@ -1,4 +1,4 @@
-name: Jekyll Build and Deploy
+name: Build and Check SCSS
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Docker and Install Dependencies
+    - name: Run Jekyll build
       run: |
         docker run \
           --env BUNDLE_PATH=/tmp/bundle \
@@ -29,41 +29,19 @@ jobs:
             mkdir -p /tmp/bundle && \
             mkdir -p /tmp/gems && \
             gem install jekyll bundler && \
-            bundle install"
-
-    - name: Validate SCSS files
-      run: |
-        docker run \
-          --env BUNDLE_PATH=/tmp/bundle \
-          --env GEM_HOME=/tmp/gems \
-          --env GEM_PATH=/tmp/gems \
-          --user $(id -u):$(id -g) \
-          -v ${{ github.workspace }}:/srv/jekyll:z \
-          jekyll/builder:latest /bin/bash -c "\
-            for file in $(find . -name '*.scss'); do
-              sass --no-source-map --check $file
-            done"
-
-    - name: Build Jekyll site
-      run: |
-        docker run \
-          --env BUNDLE_PATH=/tmp/bundle \
-          --env GEM_HOME=/tmp/gems \
-          --env GEM_PATH=/tmp/gems \
-          --user $(id -u):$(id -g) \
-          -v ${{ github.workspace }}:/srv/jekyll:z \
-          -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
-          jekyll/builder:latest /bin/bash -c "\
+            bundle install && \
             jekyll build --future --verbose --trace"
 
-    - name: Upload site content
-      uses: actions/upload-artifact@v2
-      with:
-        name: _site
-        path: _site
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_site
+    - name: Check SCSS files
+      run: |
+        docker run \
+          --env BUNDLE_PATH=/tmp/bundle \
+          --env GEM_HOME=/tmp/gems \
+          --env GEM_PATH=/tmp/gems \
+          --user $(id -u):$(id -g) \
+          -v ${{ github.workspace }}:/srv/jekyll:z \
+          jekyll/builder:latest /bin/bash -c "\
+            gem install sass && \
+            for file in \$(find . -name '*.scss'); do \
+              sass --no-source-map --check \$file; \
+            done"
