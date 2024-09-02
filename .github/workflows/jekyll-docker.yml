@@ -23,6 +23,5 @@ jobs:
           -v ${{ github.workspace }}:/srv/jekyll:z \
           -u root \
           jekyll/builder:latest /bin/bash -c "\
-            gem install sass && \
-            find . -name '*.scss' -exec sass --no-source-map --check {} \;"
-
+            gem install sassc && \
+            find . -name '*.scss' -exec sassc --no-source-map {} \;"
