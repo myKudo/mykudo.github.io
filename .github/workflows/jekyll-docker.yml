@@ -1,4 +1,4 @@
-name: Jekyll Build and SCSS Check
+name: Jekyll Build, SCSS Check, and Deploy to GitHub Pages
 
 on:
   push:
@@ -39,9 +39,17 @@ jobs:
       run: bundle exec jekyll build --verbose
       working-directory: ${{ github.workspace }}
 
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: _site
+        # if you want to deploy to a custom domain, you can uncomment and set the cname option
+        # cname: 'www.example.com'
+
     - name: Upload Jekyll build artifacts
+      if: failure()
       uses: actions/upload-artifact@v3
       with:
         name: _site
         path: _site
-
