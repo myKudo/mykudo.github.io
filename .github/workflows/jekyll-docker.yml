@@ -9,11 +9,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Run SCSS Linter
+      - name: Set up Docker environment variables
         run: |
           docker run \
             --user $(id -u):$(id -g) \
             -v ${{ github.workspace }}:/srv/jekyll:z \
+            --env GEM_HOME=/tmp/gems \
+            --env GEM_PATH=/tmp/gems \
+            --env BUNDLE_PATH=/tmp/bundle \
             jekyll/builder:latest /bin/bash -c "\
+              mkdir -p /tmp/gems && \
+              mkdir -p /tmp/bundle && \
               gem install sass && \
               sass --no-source-map --check /srv/jekyll/assets/main.scss"
