@@ -12,12 +12,9 @@ jobs:
   checkout-code:
     name: Checkout Code
     runs-on: ubuntu-latest
-    outputs:
-      workspace: ${{ steps.checkout.outputs.workspace }}
 
     steps:
       - name: Checkout Repository
-        id: checkout
         uses: actions/checkout@v3
 
   check-scss:
@@ -58,8 +55,14 @@ jobs:
             -v ${{ github.workspace }}:/srv/jekyll:z \
             -u root \
             jekyll/builder:latest /bin/bash -c "\
-              bundle install && \
-              jekyll build --future --verbose --trace"
+              cd /srv/jekyll && \
+              if [ -f Gemfile ]; then \
+                bundle install && \
+                jekyll build --future --verbose --trace; \
+              else \
+                echo 'Gemfile not found!'; \
+                exit 1; \
+              fi"
 
   run-tests:
     name: Run Tests
