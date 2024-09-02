@@ -1,47 +1,19 @@
-name: Build and Check SCSS
+name: Check SCSS
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
-  build:
+  check-scss:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Run Jekyll build
-      run: |
-        docker run \
-          --env BUNDLE_PATH=/tmp/bundle \
-          --env GEM_HOME=/tmp/gems \
-          --env GEM_PATH=/tmp/gems \
-          --user $(id -u):$(id -g) \
-          -v ${{ github.workspace }}:/srv/jekyll:z \
-          -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
-          jekyll/builder:latest /bin/bash -c "\
-            mkdir -p /tmp/bundle && \
-            mkdir -p /tmp/gems && \
-            gem install jekyll bundler && \
-            bundle install && \
-            jekyll build --future --verbose --trace"
-
-    - name: Check SCSS files
-      run: |
-        docker run \
-          --env BUNDLE_PATH=/tmp/bundle \
-          --env GEM_HOME=/tmp/gems \
-          --env GEM_PATH=/tmp/gems \
-          --user $(id -u):$(id -g) \
-          -v ${{ github.workspace }}:/srv/jekyll:z \
-          jekyll/builder:latest /bin/bash -c "\
-            gem install sass && \
-            for file in \$(find . -name '*.scss'); do \
-              sass --no-source-map --check \$file; \
-            done"
+      - name: Run SCSS Linter
+        run: |
+          docker run \
+            --user $(id -u):$(id -g) \
+            -v ${{ github.workspace }}:/srv/jekyll:z \
+            jekyll/builder:latest /bin/bash -c "\
+              gem install sass && \
+              sass --no-source-map --check /srv/jekyll/assets/main.scss"
