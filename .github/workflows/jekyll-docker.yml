@@ -22,18 +22,19 @@ jobs:
           echo "Le fichier main.scss n'existe pas."
         fi
 
-    - name: Vérifier les permissions
+    - name: Vérifier les permissions des fichiers
       run: |
+        echo "Permissions des fichiers dans le dossier assets :"
         ls -l assets/
+        echo "Permissions des fichiers à la racine du projet :"
         ls -l
 
     - name: Build the site in the jekyll/builder container
       run: |
         docker run \
         --user $(id -u):$(id -g) \
-        -v ${{ github.workspace }}:/srv/jekyll \
-        -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+        -v ${{ github.workspace }}:/srv/jekyll:z \
+        -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
         jekyll/builder:latest /bin/bash -c "\
-          chmod -R 755 /srv/jekyll && \
           bundle install && \
           bundle exec jekyll build --future --verbose --trace"
