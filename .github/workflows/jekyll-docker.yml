@@ -1,27 +1,85 @@
-name: Check SCSS
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
-  check-scss:
+  checkout-code:
+    name: Checkout Code
     runs-on: ubuntu-latest
+    outputs:
+      workspace: ${{ steps.checkout.outputs.workspace }}
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - name: Checkout Repository
+        id: checkout
+        uses: actions/checkout@v3
 
-    - name: Run SCSS Linter
-      run: |
-        docker run \
-          --env BUNDLE_PATH=/tmp/bundle \
-          --env GEM_HOME=/tmp/gems \
-          --env GEM_PATH=/tmp/gems \
-          -v ${{ github.workspace }}:/srv/jekyll:z \
-          -u root \
-          jekyll/builder:latest /bin/bash -c "\
-            gem install sassc && \
-            find . -name '*.scss' -exec sassc --no-source-map {} \;"
+  check-scss:
+    name: Check SCSS
+    runs-on: ubuntu-latest
+    needs: checkout-code
+
+    steps:
+      - name: Check for SCSS Files
+        run: |
+          if find . -name '*.scss' | grep -q .; then
+            echo "SCSS files found, running linter."
+            docker run \
+              --env BUNDLE_PATH=/tmp/bundle \
+              --env GEM_HOME=/tmp/gems \
+              --env GEM_PATH=/tmp/gems \
+              -v ${{ github.workspace }}:/srv/jekyll:z \
+              -u root \
+              jekyll/builder:latest /bin/bash -c "\
+                gem install sassc && \
+                find . -name '*.scss' -exec sassc --no-source-map {} \;"
+          else
+            echo "No SCSS files found, skipping SCSS check."
+          fi
+
+  build-site:
+    name: Build Jekyll Site
+    runs-on: ubuntu-latest
+    needs: checkout-code
+
+    steps:
+      - name: Build the Jekyll Site
+        run: |
+          docker run \
+            --env BUNDLE_PATH=/tmp/bundle \
+            --env GEM_HOME=/tmp/gems \
+            --env GEM_PATH=/tmp/gems \
+            -v ${{ github.workspace }}:/srv/jekyll:z \
+            -u root \
+            jekyll/builder:latest /bin/bash -c "\
+              bundle install && \
+              jekyll build --future --verbose --trace"
+
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build-site
+
+    steps:
+      - name: Run Your Tests
+        run: |
+          # Add your test commands here
+          echo "Running tests..."
+
+  deploy:
+    name: Deploy Site
+    runs-on: ubuntu-latest
+    needs: [build-site, run-tests]
+
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
