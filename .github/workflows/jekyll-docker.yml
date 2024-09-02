@@ -1,4 +1,4 @@
-name: Build Jekyll Site
+name: Jekyll Build
 
 on:
   push:
@@ -13,29 +13,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up Docker
-        run: sudo apt-get install docker-ce docker-ce-cli containerd.io
+    - name: Set up Docker
+      run: |
+        docker run \
+          --env BUNDLE_PATH=/tmp/bundle \
+          --env GEM_HOME=/tmp/gems \
+          --env GEM_PATH=/tmp/gems \
+          --user $(id -u):$(id -g) \
+          -v ${{ github.workspace }}:/srv/jekyll:z \
+          -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
+          jekyll/builder:latest /bin/bash -c "\
+            mkdir -p /tmp/bundle && \
+            mkdir -p /tmp/gems && \
+            jekyll clean && \
+            bundle install && \
+            jekyll build --future --verbose --trace"
 
-      - name: Build Jekyll Site
-        run: |
-          docker run \
-            --env BUNDLE_PATH=/tmp/bundle \
-            --env GEM_HOME=/tmp/gems \
-            --env GEM_PATH=/tmp/gems \
-            --user $(id -u):$(id -g) \
-            -v ${{ github.workspace }}:/srv/jekyll:z \
-            -v ${{ github.workspace }}/_site:/srv/jekyll/_site:z \
-            jekyll/builder:latest /bin/bash -c "\
-              mkdir -p /tmp/bundle && \
-              mkdir -p /tmp/gems && \
-              bundle install && \
-              jekyll build --future --verbose --trace"
+    - name: Upload site content
+      uses: actions/upload-artifact@v2
+      with:
+        name: _site
+        path: _site
 
-      - name: Upload _site directory
-        uses: actions/upload-artifact@v3
-        with:
-          name: site
-          path: _site
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./_site
