@@ -1,25 +1,28 @@
 name: Check SCSS
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   check-scss:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Set up Docker environment and check SCSS
-        run: |
-          docker run \
-            --user $(id -u):$(id -g) \
-            -v ${{ github.workspace }}:/srv/jekyll:z \
-            --env GEM_HOME=/tmp/gems \
-            --env GEM_PATH=/tmp/gems \
-            --env BUNDLE_PATH=/tmp/bundle \
-            jekyll/builder:latest /bin/bash -c "\
-              mkdir -p /tmp/gems && \
-              mkdir -p /tmp/bundle && \
-              apk add --no-cache curl && \
-              curl -L https://sass-lang.com/install.sh | bash && \
-              sass --no-source-map --check /srv/jekyll/assets/main.scss"
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Run SCSS Linter
+      run: |
+        docker run \
+          --env BUNDLE_PATH=/tmp/bundle \
+          --env GEM_HOME=/tmp/gems \
+          --env GEM_PATH=/tmp/gems \
+          -v ${{ github.workspace }}:/srv/jekyll:z \
+          -u root \
+          jekyll/builder:latest /bin/bash -c "\
+            gem install sass && \
+            find . -name '*.scss' -exec sass --no-source-map --check {} \;"
+
