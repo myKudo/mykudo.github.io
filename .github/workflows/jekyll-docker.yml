@@ -9,7 +9,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker environment variables
+      - name: Set up Docker environment and check SCSS
         run: |
           docker run \
             --user $(id -u):$(id -g) \
@@ -20,7 +20,6 @@ jobs:
             jekyll/builder:latest /bin/bash -c "\
               mkdir -p /tmp/gems && \
               mkdir -p /tmp/bundle && \
-              apt-get update && \
-              apt-get install -y curl && \
+              apk add --no-cache curl && \
               curl -L https://sass-lang.com/install.sh | bash && \
               sass --no-source-map --check /srv/jekyll/assets/main.scss"
