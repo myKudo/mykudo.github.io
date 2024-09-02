@@ -13,8 +13,19 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: List assets directory
-      run: ls -R assets || echo "No assets directory found"
+    - name: Afficher le contenu de main.scss
+      run: |
+        if [ -f assets/main.scss ]; then
+          echo "Le fichier main.scss existe, voici son contenu :"
+          cat assets/main.scss
+        else
+          echo "Le fichier main.scss n'existe pas."
+        fi
+
+    - name: Vérifier les permissions
+      run: |
+        ls -l assets/
+        ls -l
 
     - name: Build the site in the jekyll/builder container
       run: |
@@ -23,10 +34,6 @@ jobs:
         -v ${{ github.workspace }}:/srv/jekyll \
         -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
         jekyll/builder:latest /bin/bash -c "\
-          mkdir -p /srv/jekyll/.gem && \
-          export GEM_HOME=/srv/jekyll/.gem && \
-          export GEM_PATH=/srv/jekyll/.gem && \
-          cd /srv/jekyll && \
-          gem install bundler && \
+          chmod -R 755 /srv/jekyll && \
           bundle install && \
           bundle exec jekyll build --future --verbose --trace"
